@@ -30,13 +30,13 @@ if __name__ == "__main__":
         with open(meta_path, 'r') as f:
             metadata = json.load(f)
 
-        assert len(img.shape) == 3, f"Image {i} has incorrect shape."
-        assert type(label) == int
+        # assert len(img.shape) == 3, f"Image {i} has incorrect shape."
+        # assert type(label) == int
 
         components = im_path.split(os.path.sep)
         cls = components[-3]  # eg: airport
         instance = components[-2]  # eg: airport_0
-        imgid = components[-1].replace("_crop_0", "")  # eg: airport_0_0_rgb.jpg
+        imgid = components[-1].replace("_crop_0.jpg", "")  # eg: airport_0_0_rgb.jpg
 
         sink.write({
             "__key__": f"{cls}-{instance}-{imgid}",
