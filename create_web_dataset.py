@@ -49,7 +49,6 @@ if __name__ == "__main__":
 
     sink = wds.TarWriter(args.dest_path)
 
-    pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
     with ThreadPoolExecutor(max_workers=args.num_workers) as exec:
         future_to_out = {exec.submit(create_output_dict, im_path, label): (im_path, label)
                          for im_path, label in zip(image_arr, label_arr)}
@@ -62,6 +61,7 @@ if __name__ == "__main__":
 
             sink.write(out_dict)
 
+    # pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
     # for i, (im_path, label) in enumerate(pbar):
     #     img = Image.open(im_path)
     #
