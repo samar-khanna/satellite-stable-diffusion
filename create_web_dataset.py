@@ -12,7 +12,8 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def create_output_dict(im_path, label):
-    img = Image.open(im_path)
+    with Image.open(im_path) as im:
+        img_arr = np.array(im)
 
     meta_path = im_path.replace('_crop_0.jpg', '.json')
     with open(meta_path, 'r') as f:
@@ -28,7 +29,7 @@ def create_output_dict(im_path, label):
 
     out = {
             "__key__": f"{cls}-{instance}-{imgid}",
-            "input.png": img,
+            "input.png": img_arr,
             "output.cls": label,
             "metadata.json": metadata,
         }
