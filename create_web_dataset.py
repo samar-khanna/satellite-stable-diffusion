@@ -61,7 +61,7 @@ if __name__ == "__main__":
                 raise e
 
             sink.write(out_dict)
-            out_dict['input.png'].close()
+            # out_dict['input.png'].close()
 
     # pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
     # for i, (im_path, label) in enumerate(pbar):
