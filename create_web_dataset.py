@@ -64,6 +64,7 @@ if __name__ == "__main__":
             try:
                 out_dict = future.result()
             except Exception as e:
+                print(future_to_out[future])
                 raise e
 
             sink.write(out_dict)
