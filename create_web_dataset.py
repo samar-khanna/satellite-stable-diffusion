@@ -10,6 +10,8 @@ import webdataset as wds
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+Image.MAX_IMAGE_PIXELS = 251598688 + 2
+
 
 def create_output_dict(im_path, label):
     with Image.open(im_path) as im:
@@ -61,6 +63,7 @@ if __name__ == "__main__":
                 raise e
 
             sink.write(out_dict)
+            del out_dict
             # out_dict['input.png'].close()
 
     # pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
