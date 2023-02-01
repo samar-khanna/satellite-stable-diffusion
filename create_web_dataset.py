@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 Image.MAX_IMAGE_PIXELS = 251598688 + 2
 
 
-def create_output_dict(im_path, label):
+def create_output_dict(im_path, label, sink):
     with Image.open(im_path) as im:
         img_arr = np.array(im)
 
@@ -35,7 +35,8 @@ def create_output_dict(im_path, label):
             "output.cls": label,
             "metadata.json": metadata,
         }
-    return out
+    sink.write(out)
+    # return out
 
 
 if __name__ == "__main__":
@@ -53,17 +54,20 @@ if __name__ == "__main__":
     sink = wds.TarWriter(args.dest_path)
 
     with ThreadPoolExecutor(max_workers=args.num_workers) as exec:
-        future_to_out = {exec.submit(create_output_dict, im_path, label): (im_path, label)
+        future_to_out = {exec.submit(create_output_dict, im_path, label, sink): (im_path, label)
                          for im_path, label in zip(image_arr, label_arr)}
 
         for future in tqdm(as_completed(future_to_out), total=len(image_arr)):
-            try:
-                out_dict = future.result()
-            except Exception as e:
-                raise e
-
-            sink.write(out_dict)
-            del out_dict
+            exception = future.exception()
+            if exception is not None:
+                raise exception
+            # try:
+            #     out_dict = future.result()
+            # except Exception as e:
+            #     raise e
+            #
+            # sink.write(out_dict)
+            # del out_dict
             # out_dict['input.png'].close()
 
     # pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
