@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 Image.MAX_IMAGE_PIXELS = 251598688 + 2
 
 
-def create_output_dict(im_path, label, sink):
+def create_output_dict(im_path, label):
     with Image.open(im_path) as im:
         img_arr = np.array(im)
 
@@ -35,8 +35,8 @@ def create_output_dict(im_path, label, sink):
             "output.cls": label,
             "metadata.json": metadata,
         }
-    sink.write(out)
-    # return out
+    # sink.write(out)
+    return out
 
 
 if __name__ == "__main__":
@@ -54,25 +54,26 @@ if __name__ == "__main__":
     sink = wds.TarWriter(args.dest_path)
 
     with ThreadPoolExecutor(max_workers=args.num_workers) as exec:
-        future_to_out = {exec.submit(create_output_dict, im_path, label, sink): (im_path, label)
+        future_to_out = {exec.submit(create_output_dict, im_path, label): (im_path, label)
                          for im_path, label in zip(image_arr, label_arr)}
 
         for future in tqdm(as_completed(future_to_out), total=len(image_arr)):
-            exception = future.exception()
-            if exception is not None:
-                raise exception
-            # try:
-            #     out_dict = future.result()
-            # except Exception as e:
-            #     raise e
-            #
-            # sink.write(out_dict)
-            # del out_dict
+            # exception = future.exception()
+            # if exception is not None:
+            #     raise exception
+            try:
+                out_dict = future.result()
+            except Exception as e:
+                raise e
+
+            sink.write(out_dict)
+            future_to_out.pop(future)
             # out_dict['input.png'].close()
 
     # pbar = tqdm(zip(image_arr, label_arr), total=len(image_arr))
     # for i, (im_path, label) in enumerate(pbar):
-    #     img = Image.open(im_path)
+    #     with Image.open(im_path) as im:
+    #         img_arr = np.array(im)
     #
     #     meta_path = im_path.replace('_crop_0.jpg', '.json')
     #     with open(meta_path, 'r') as f:
@@ -86,10 +87,11 @@ if __name__ == "__main__":
     #     instance = components[-2]  # eg: airport_0
     #     imgid = components[-1].replace("_crop_0.jpg", "")  # eg: airport_0_0_rgb.jpg
     #
-    #     sink.write({
+    #     out = {
     #         "__key__": f"{cls}-{instance}-{imgid}",
-    #         "input.png": img,
+    #         "input.png": img_arr,
     #         "output.cls": label,
     #         "metadata.json": metadata,
-    #     })
+    #     }
+    #     sink.write(out)
 
